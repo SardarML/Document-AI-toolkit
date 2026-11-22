@@ -82,7 +82,6 @@ The `create_app(classifier)` factory exposes `POST /predict`. A real deployment 
 
 ## Important limitations
 
-- The six classifier training sentences are deliberately tiny and cannot support credible generalization claims.
 - `read_table` from the original Colab prototype was layout-dependent; general table reconstruction is not included.
 - Standard spaCy models do **not** reliably identify medical conditions or other domain-specific entities.
 - In-memory vector storage has no persistence, authentication or multi-worker synchronization. The Gradio demo rebuilds a local index per question for clarity, which is inefficient at scale.
