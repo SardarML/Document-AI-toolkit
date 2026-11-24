@@ -23,6 +23,8 @@ python examples/quickstart.py
 pytest -q
 ```
 
+`pip install -e '.[test]'` also installs LangGraph and FastMCP, so the workflow and MCP tests run instead of being skipped (this is what CI uses).
+
 ### Gradio demo
 
 ```bash
@@ -44,8 +46,8 @@ from document_ai.classification import train_classifier
 from document_ai.retrieval import retrieval_metrics
 
 model = train_classifier(
-    ["payment invoice", "invoice number", "patient diagnosis", "clinical note"],
-    ["invoice", "invoice", "medical_record", "medical_record"],
+    ["payment invoice", "invoice number", "service agreement", "termination clause"],
+    ["invoice", "invoice", "contract", "contract"],
 )
 print(model.predict(["invoice payment"]))
 print(retrieval_metrics(["b", "a"], {"a"}, k=2))
@@ -72,8 +74,8 @@ The `create_app(classifier)` factory exposes `POST /predict`. A real deployment 
 
 ### Evaluation
 
-- **Classification:** accuracy, macro precision, macro recall and macro F1 (`classification.py`)
-- **Retrieval:** Precision@k, Recall@k, reciprocal rank and nDCG@k (`retrieval.py`)
+- **Classification:** accuracy, macro precision, macro recall and macro F1 on a small held-out sample, plus a confusion matrix and the list of misclassified examples (`classification.py`)
+- **Retrieval:** Precision@k, Recall@k, reciprocal rank and nDCG@k (`retrieval.py`); `hybrid_search` (BM25 + vectors via `reciprocal_rank_fusion`) is a tested utility but is not wired into the demo
 - **Generation:** strict exact-match baseline (`evaluation.py`); semantic correctness, faithfulness and answer relevance require human review or a validated judge
 - **Agents:** task and tool success rates require labeled execution traces; this repository demonstrates a success-rate helper
 - **Operations:** optional MLflow logging (`tracking.py`), pytest and GitHub Actions CI
@@ -82,8 +84,8 @@ The `create_app(classifier)` factory exposes `POST /predict`. A real deployment 
 
 ## Important limitations
 
-- `read_table` from the original Colab prototype was layout-dependent; general table reconstruction is not included.
-- Standard spaCy models do **not** reliably identify medical conditions or other domain-specific entities.
+- General table reconstruction is not included.
+- Standard spaCy models do **not** reliably identify domain-specific entities such as contract clauses or product codes.
 - In-memory vector storage has no persistence, authentication or multi-worker synchronization. The Gradio demo rebuilds a local index per question for clarity, which is inefficient at scale.
 - The MCP demo runs inside one Python process. It does not expose remote MCP transport.
 - Prompt-injection resistance is **not guaranteed** by system prompts or marking text as untrusted. Use permissions, validation and sandboxing in real deployments.
@@ -96,7 +98,7 @@ The `create_app(classifier)` factory exposes `POST /predict`. A real deployment 
 ```text
 src/document_ai/   # Independent modules
 examples/          # Offline quickstart
- tests/            # Offline unit tests plus optional integration tests
+tests/             # Offline unit tests plus optional integration tests
 .github/workflows/ # Continuous integration
 ```
 

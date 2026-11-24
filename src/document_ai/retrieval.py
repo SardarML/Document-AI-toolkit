@@ -45,6 +45,15 @@ def retrieval_metrics(ranked: list[str], relevant: set[str], k: int = 3) -> dict
     }
 
 
+def reciprocal_rank_fusion(rankings: list[list[str]], k: int = 60) -> list[str]:
+    """Fuse ranked ID lists; the highest fused score comes first."""
+    fused = {}
+    for ranking in rankings:
+        for position, item in enumerate(ranking, 1):
+            fused[item] = fused.get(item, 0) + 1 / (k + position)
+    return sorted(fused, key=fused.get, reverse=True)
+
+
 def hybrid_search(query: str, docs: list, store, k: int = 3) -> list[str]:
     """Combine BM25 and vector rankings using reciprocal rank fusion."""
     import numpy as np
@@ -56,8 +65,4 @@ def hybrid_search(query: str, docs: list, store, k: int = 3) -> list[str]:
     scores = BM25Okapi([tokenize(d.page_content) for d in docs]).get_scores(tokenize(query))
     lexical = [docs[i].metadata["chunk_id"] for i in np.argsort(scores)[::-1]]
     semantic = [d.metadata["chunk_id"] for d in store.similarity_search(query, k=len(docs))]
-    fused = {}
-    for ranking in (lexical, semantic):
-        for position, item in enumerate(ranking, 1):
-            fused[item] = fused.get(item, 0) + 1 / (60 + position)
-    return sorted(fused, key=fused.get, reverse=True)[:k]
+    return reciprocal_rank_fusion([lexical, semantic])[:k]

@@ -7,6 +7,8 @@ from .examples import TRAIN_LABELS, TRAIN_TEXTS
 
 
 async def _run_agent(text, question):
+    import gradio as gr
+
     if not os.getenv("OPENAI_API_KEY"):
         raise gr.Error("Set OPENAI_API_KEY to use the LLM agent")
     if not text.strip() or not question.strip():

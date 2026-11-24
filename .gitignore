@@ -15,4 +15,5 @@ mlflow.db
 *.jpg
 *.jpeg
 *.pdf
+!docs/**
 *.ipynb_checkpoints/

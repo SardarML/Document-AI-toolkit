@@ -23,3 +23,16 @@ def evaluate_classifier(model, texts: list[str], labels: list[str]) -> dict:
         "recall_macro": recall_score(labels, predictions, average="macro", zero_division=0),
         "f1_macro": f1_score(labels, predictions, average="macro", zero_division=0),
     }
+
+
+def error_analysis(model, texts: list[str], labels: list[str]) -> dict:
+    """Return the confusion matrix and the misclassified examples."""
+    from sklearn.metrics import confusion_matrix
+
+    predictions = model.predict(texts)
+    classes = [str(c) for c in model.classes_]
+    return {
+        "classes": classes,
+        "confusion_matrix": confusion_matrix(labels, predictions, labels=classes).tolist(),
+        "errors": [(t, l, p) for t, l, p in zip(texts, labels, predictions) if l != p],
+    }
